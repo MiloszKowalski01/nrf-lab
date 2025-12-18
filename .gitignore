@@ -1,0 +1,9 @@
+build/
+**/build/
+.cache/
+**/.cache/
+.vscode/
+*.elf
+*.map
+*.bin
+*.hex
