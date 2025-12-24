@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"nrf-connect.debugging.bindings": {
+			"/home/miloszek/ncs/v3.2.0/zephyr/samples/basic/button/build/button": "Launch button"
+		}
+	}
+}
