@@ -9,6 +9,7 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_INF);
 
 /* Local defines Begin */
 static constexpr uint8_t DebounceDelay = 20;
+static constexpr uint8_t LedBlinkDelay = 200;
 /* Local defines End */
 
 /* Aliases definitions Begin */
@@ -48,14 +49,17 @@ static struct gpio_callback button_cb;
 
 /* Work Queues Definitions Begin */
 static struct k_work_delayable button_work;
+static struct k_work_delayable led_blink_work;
 /* Work Queues Definitions End */
 
 /* Used Variables Begin */
 static bool led_on = false;
+static bool led_blink = false;
 /* Used Variables End */
 
 /* Work Queues Functions Begin */
 static void button_work_handler(struct k_work *work);
+static void led_blink_work_handler(struct k_work *work);
 /* Work Queues Functions Definitions End */
 
 /* ISR Functions Begin */
@@ -109,6 +113,9 @@ int main(void)
 
     /* Initialize Work Queue Begin */
     k_work_init_delayable(&button_work, button_work_handler);
+
+    k_work_init_delayable(&led_blink_work, led_blink_work_handler);
+    (void)k_work_schedule(&led_blink_work, K_MSEC(LedBlinkDelay));
     /* Initialize Work Queue End */
 
     /* GPIO ISR Configurations Begin */
@@ -162,4 +169,22 @@ static void button_isr(const struct device *dev, struct gpio_callback *cb, uint3
     ARG_UNUSED(pins);
 
     (void)k_work_reschedule(&button_work, K_MSEC(DebounceDelay));
+}
+
+static void led_blink_work_handler(struct k_work *work)
+{
+    ARG_UNUSED(work);
+
+    led_blink = !led_blink;
+    int r = gpio_pin_set(led1_dev, led1_pin, led_blink ? 1 : 0);
+    if (r < 0) 
+    {
+        LOG_ERR("gpio_pin_set failed: %d", r);
+    } 
+    else 
+    {
+        LOG_INF("LED1 toggled: %d", (int)led_blink);
+    }
+
+    (void)k_work_reschedule(&led_blink_work, K_MSEC(LedBlinkDelay));
 }
